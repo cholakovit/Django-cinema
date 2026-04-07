@@ -37,7 +37,8 @@ API base path: `/api/v1/` (see `config/urls.py`).
 
 1. Push this repo to GitHub.
 2. On **Railway**, **Render**, or similar: connect the repo, set root to this project if it lives in a monorepo, add the same environment variables as in `.env.example`.
-3. The included `Procfile` runs Gunicorn; the platform should set `PORT` (fallback `8000` for local).
+3. Build: `pip install -r requirements.txt` (generated with `uv export`; or `uv sync` if the host has `uv`).
+4. Start: use the `Procfile` (`web:`). The platform must set `PORT` (e.g. Railway, Render).
 
 Ensure Neo4j is reachable from the host (AuraDB URI, or a private network).
 
