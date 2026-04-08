@@ -22,7 +22,9 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "config.exception_handlers.drf_exception_handler",
     "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "UNAUTHENTICATED_USER": None,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],

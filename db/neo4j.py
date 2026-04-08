@@ -10,10 +10,10 @@ _driver = None
 def get_driver():
     global _driver
     if _driver is None:
-        _driver = GraphDatabase.driver(
-            os.getenv("NEO4J_URI", "bolt://localhost:7687"),
-            auth=(os.getenv("NEO4J_USER", "neo4j"), os.getenv("NEO4J_PASSWORD", "")),
-        )
+        user = (os.getenv("NEO4J_USER") or "neo4j").strip()
+        password = (os.getenv("NEO4J_PASSWORD") or "").strip()
+        uri = (os.getenv("NEO4J_URI") or "bolt://localhost:7687").strip()
+        _driver = GraphDatabase.driver(uri, auth=(user, password))
     return _driver
 
 
