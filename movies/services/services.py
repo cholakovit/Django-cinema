@@ -8,14 +8,6 @@ from movies.repositories.repo import (
 
 
 def create_movie(name, year=None, description=None, rating=None):
-    if not name or not str(name).strip():
-        raise ValueError("Name is required")
-    if year is not None and (not isinstance(year, int) or year < 0):
-        raise ValueError("Year must be a positive integer")
-    if rating is not None and (
-        not isinstance(rating, (int, float)) or rating < 0 or rating > 10
-    ):
-        raise ValueError("Rating must be a number between 0 and 10")
     return repo_create(name, year, description, rating)
 
 
@@ -35,17 +27,9 @@ def update_movie(movie_id, name=None, year=None, description=None, rating=None):
     existing = repo_get_by_id(movie_id)
     if not existing:
         return None
-    if name is not None and not str(name).strip():
-        raise ValueError("Name is required")
-    if year is not None and (not isinstance(year, int) or year < 0):
-        raise ValueError("Year must be a positive integer")
-    if rating is not None and (
-        not isinstance(rating, (int, float)) or rating < 0 or rating > 10
-    ):
-        raise ValueError("Rating must be a number between 0 and 10")
     return repo_update(
         movie_id,
-        name=str(name).strip() if name is not None else None,
+        name=name,
         year=year,
         description=description,
         rating=rating,

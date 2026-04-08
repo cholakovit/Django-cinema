@@ -1,8 +1,9 @@
-from django.http import HttpRequest, JsonResponse
-from django.views.decorators.http import require_http_methods
 from pydantic import ValidationError
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from movies.dto.movie import MovieCreate, MovieResponse, MovieUpdate
+from movies.dto.dto import MovieCreate, MovieUpdate
 from movies.services.services import (
     create_movie,
     delete_movie,
@@ -10,81 +11,70 @@ from movies.services.services import (
     list_movies as list_movies_from_db,
     update_movie,
 )
-from movies.utils.responses import bad_request, not_found, parse_json_body
-from utils.neo4j import node_to_json
+from utils.helper import movie_row_to_payload
 
 
-def _movie_to_payload(row: dict[str, object]) -> dict[str, object]:
-    return MovieResponse.model_validate(node_to_json(row)).model_dump(mode="json")
-
-
-def _movie_list_get(request: HttpRequest) -> JsonResponse:
-    try:
-        skip = int(request.GET.get("skip", 0))
-        limit = int(request.GET.get("limit", 20))
-    except ValueError:
-        skip, limit = 0, 20
-    rows = list_movies_from_db(skip, limit)
-    return JsonResponse(
-        {"items": [_movie_to_payload(row) for row in rows]},
-        safe=False,
-    )
-
-
-def _movie_upsert(request: HttpRequest) -> JsonResponse:
-    data = parse_json_body(request)
-    raw_id = data.get("id")
-    if raw_id is not None and str(raw_id).strip():
-        movie_id = str(raw_id).strip()
-        subset = {k: data[k] for k in data if k != "id"}
+class MovieCollectionView(APIView):
+    def get(self, request):
         try:
-            dto = MovieUpdate.model_validate(subset)
+            skip = int(request.query_params.get("skip", 0))
+            limit = int(request.query_params.get("limit", 20))
+        except ValueError:
+            skip, limit = 0, 20
+        rows = list_movies_from_db(skip, limit)
+        return Response(
+            {"items": [movie_row_to_payload(row) for row in rows]},
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request):
+        data = request.data if isinstance(request.data, dict) else {}
+        raw_id = data.get("id")
+        if raw_id is not None and str(raw_id).strip():
+            movie_id = str(raw_id).strip()
+            subset = {k: data[k] for k in data if k != "id"}
+            try:
+                dto = MovieUpdate.model_validate(subset)
+            except ValidationError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                updated = update_movie(
+                    movie_id,
+                    name=dto.name,
+                    year=dto.year,
+                    description=dto.description,
+                    rating=dto.rating,
+                )
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            if not updated:
+                return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(movie_row_to_payload(updated), status=status.HTTP_200_OK)
+        try:
+            dto = MovieCreate.model_validate(data)
         except ValidationError as e:
-            return bad_request(str(e))
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            updated = update_movie(
-                movie_id,
-                name=dto.name,
+            created = create_movie(
+                dto.name,
                 year=dto.year,
                 description=dto.description,
                 rating=dto.rating,
             )
         except ValueError as e:
-            return bad_request(str(e))
-        if not updated:
-            return not_found()
-        return JsonResponse(_movie_to_payload(updated), safe=False)
-    try:
-        dto = MovieCreate.model_validate(data)
-    except ValidationError as e:
-        return bad_request(str(e))
-    try:
-        created = create_movie(
-            dto.name,
-            year=dto.year,
-            description=dto.description,
-            rating=dto.rating,
-        )
-    except ValueError as e:
-        return bad_request(str(e))
-    return JsonResponse(_movie_to_payload(created), status=201, safe=False)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(movie_row_to_payload(created), status=status.HTTP_201_CREATED)
 
 
-@require_http_methods(["GET", "POST"])
-def movie_collection(request: HttpRequest) -> JsonResponse:
-    if request.method == "GET":
-        return _movie_list_get(request)
-    return _movie_upsert(request)
-
-
-@require_http_methods(["GET", "DELETE"])
-def movie_detail(request: HttpRequest, movie_id: str) -> JsonResponse:
-    if request.method == "GET":
+class MovieDetailView(APIView):
+    def get(self, request, movie_id):
         row = get_movie(movie_id)
         if not row:
-            return not_found()
-        return JsonResponse(_movie_to_payload(row), safe=False)
-    ok = delete_movie(movie_id)
-    if not ok:
-        return not_found()
-    return JsonResponse({}, status=204)
+            return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(movie_row_to_payload(row), status=status.HTTP_200_OK)
+
+    def delete(self, request, movie_id):
+        ok = delete_movie(movie_id)
+        if not ok:
+            return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)

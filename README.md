@@ -1,6 +1,6 @@
 # Django Cinema
 
-JSON API for a movie graph catalog: titles, genres, and related entities. **Django** serves HTTP; **Neo4j** stores the graph; request/response shapes use **Pydantic** DTOs.
+JSON API for a movie graph catalog: titles, genres, and related entities. **Django REST Framework** exposes JSON endpoints; **Neo4j** stores the graph; request/response validation uses **Pydantic** DTOs.
 
 ## Requirements
 

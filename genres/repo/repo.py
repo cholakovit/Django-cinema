@@ -1,41 +1,51 @@
 import uuid
-from datetime import datetime
-from db.neo4j import get_driver
+from datetime import datetime, timezone
 
-def create(name: str, slug: str | None = None, description: str | None = None, parent_id: str | None = None, color: str | None = None, icon: str | None = None) -> None:
+from db.neo4j import get_driver
+from genres.dto.dto import GenreCreate, GenreUpdate
+
+_PATCH_KEYS = frozenset(
+    ("name", "slug", "description", "parent_id", "color", "icon"),
+)
+
+
+def create(data: GenreCreate) -> dict[str, object] | None:
+    d = data.model_dump()
     driver = get_driver()
     uid = str(uuid.uuid4())
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     with driver.session() as session:
         session.run(
             """
-            CREATE (g:Genre { 
+            CREATE (g:Genre {
               id: $id, name: $name, slug: $slug, type: 'genre',
-              description: $description, parent_id: $parent_id, 
+              description: $description, parent_id: $parent_id,
               color: $color, icon: $icon, created_at: $created_at}) RETURN g
             """,
             id=uid,
-            name=name,
-            slug=slug,
-            description=description,
-            parent_id=parent_id,
-            color=color,
-            icon=icon,
+            name=d["name"],
+            slug=d["slug"],
+            description=d["description"],
+            parent_id=d["parent_id"],
+            color=d["color"],
+            icon=d["icon"],
             created_at=now,
         )
     return get_by_id(uid)
 
-def get_by_id(id: str) -> None:
+
+def get_by_id(genre_id: str) -> dict[str, object] | None:
     driver = get_driver()
     with driver.session() as session:
         result = session.run(
             "MATCH (g:Genre {id: $id}) RETURN g",
-            id=id,
+            id=genre_id,
         )
         record = result.single()
         if not record:
             return None
         return dict(record["g"])
+
 
 def list_all(skip: int = 0, limit: int = 100) -> list[dict[str, object]]:
     driver = get_driver()
@@ -47,36 +57,29 @@ def list_all(skip: int = 0, limit: int = 100) -> list[dict[str, object]]:
         )
         return [dict(record["g"]) for record in result]
 
-def update(id: str, name: str | None = None, slug: str | None = None, description: str | None = None, parent_id: str | None = None, color: str | None = None, icon: str | None = None) -> None:
-    driver = get_driver()
+
+def update(genre_id: str, patch: GenreUpdate) -> dict[str, object] | None:
+    data = patch.model_dump(exclude_unset=True)
     updates = []
-    params = {"id": id}
-    if name is not None:
-        updates.append("g.name = $name")
-        params["name"] = name
-    if slug is not None:
-        updates.append("g.slug = $slug")
-        params["slug"] = slug
-    if description is not None:
-        updates.append("g.description = $description")
-        params["description"] = description
-    if parent_id is not None:
-        updates.append("g.parent_id = $parent_id")
-        params["parent_id"] = parent_id
-    if color is not None:
-        updates.append("g.color = $color")
-        params["color"] = color
-    if icon is not None:
-        updates.append("g.icon = $icon")
-        params["icon"] = icon
+    params: dict[str, object] = {"id": genre_id}
+    for key in _PATCH_KEYS:
+        if key not in data:
+            continue
+        val = data[key]
+        if val is None:
+            continue
+        updates.append(f"g.{key} = ${key}")
+        params[key] = val
     if not updates:
-        return get_by_id(id)
+        return get_by_id(genre_id)
     set_clause = ", ".join(updates)
+    driver = get_driver()
     with driver.session() as session:
         session.run(f"MATCH (g:Genre {{id: $id}}) SET {set_clause} RETURN g", **params)
-    return get_by_id(id)
+    return get_by_id(genre_id)
 
-def delete(id: str) -> None:
+
+def delete(genre_id: str) -> None:
     driver = get_driver()
     with driver.session() as session:
-        session.run("MATCH (g:Genre {id: $id}) DETACH DELETE g", id=id)
+        session.run("MATCH (g:Genre {id: $id}) DETACH DELETE g", id=genre_id)

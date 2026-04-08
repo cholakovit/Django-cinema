@@ -1,8 +1,8 @@
 from django.urls import path
 
-from movies import views
+from movies.views.views import MovieCollectionView, MovieDetailView
 
 urlpatterns = [
-    path("movies/", views.movie_collection, name="movie_collection"),
-    path("movies/<str:movie_id>/", views.movie_detail, name="movie_detail"),
+    path("movies/", MovieCollectionView.as_view(), name="movie_collection"),
+    path("movies/<str:movie_id>/", MovieDetailView.as_view(), name="movie_detail"),
 ]

@@ -1,3 +1,3 @@
-from genres.views.views import genre_collection, genre_detail
+from genres.views.views import GenreCollectionView, GenreDetailView
 
-__all__ = ["genre_collection", "genre_detail"]
+__all__ = ["GenreCollectionView", "GenreDetailView"]
