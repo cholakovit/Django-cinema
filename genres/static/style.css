@@ -1,0 +1,113 @@
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  color: #111;
+}
+
+.genre-header {
+  width: 100%;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.35);
+  border-bottom: 1px solid #1e293b;
+}
+
+.genre-header-inner {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+}
+
+.genre-brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #f8fafc;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.genre-brand:hover {
+  color: #cbd5e1;
+}
+
+.genre-nav {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.65rem 1.1rem;
+  min-width: 0;
+}
+
+.genre-nav-end {
+  margin-left: auto;
+}
+
+.genre-logout-form {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.genre-nav a,
+.genre-nav a:visited,
+.genre-nav button.genre-nav-btn {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.genre-nav a:hover,
+.genre-nav button.genre-nav-btn:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.genre-nav button.genre-nav-btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+@media (max-width: 28rem) {
+  .genre-header-inner {
+    flex-wrap: wrap;
+  }
+
+  .genre-nav {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+.genre-main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2rem;
+}
+
+.hint {
+  color: #52525b;
+  font-size: 0.9rem;
+}
+
+li {
+  margin: 0.35rem 0;
+}

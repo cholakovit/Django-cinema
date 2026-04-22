@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% firstof genre.name genre.slug genre.id %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+  </head>
+  <body>
+    <header class="genre-header">
+      <div class="genre-header-inner">
+        <a class="genre-brand" href="{% url 'genre_list_page' %}">Cinema2 · Genres</a>
+        <nav class="genre-nav genre-nav-end" aria-label="Genres">
+          <a href="{% url 'genre_list_page' %}">All genres</a>
+          {% include "includes/_auth_corner.html" %}
+        </nav>
+      </div>
+    </header>
+    <main class="genre-main">
+      <h1>{% firstof genre.name genre.slug genre.id %}</h1>
+      <dl>
+        {% if genre.slug %}<dt>Slug</dt><dd>{{ genre.slug }}</dd>{% endif %}
+        {% if genre.description %}<dt>Description</dt><dd>{{ genre.description }}</dd>{% endif %}
+        {% if genre.parent_id %}<dt>Parent</dt><dd>{{ genre.parent_id }}</dd>{% endif %}
+        {% if genre.color %}<dt>Color</dt><dd>{{ genre.color }}</dd>{% endif %}
+        {% if genre.icon %}<dt>Icon</dt><dd>{{ genre.icon }}</dd>{% endif %}
+        {% if genre.created_at %}<dt>Created</dt><dd>{{ genre.created_at }}</dd>{% endif %}
+      </dl>
+      <p class="hint">JSON: <code>/api/v1/genres/{{ genre.id }}/</code></p>
+      {% if user.is_authenticated %}
+      <p>
+        <a href="{% url 'genre_delete_page' genre.id %}">Delete</a>
+      </p>
+      {% endif %}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Delete Genre</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'style.css' %}" />
+    </head>
+    <body>
+        <header class="genre-header">
+            <div class="genre-header-inner">
+                <a class="genre-brand" href="{% url 'genre_list_page' %}">Cinema2 · Genres</a>
+                <nav class="genre-nav genre-nav-end" aria-label="Genres">
+                    <a href="{% url 'genre_list_page' %}">All genres</a>
+                    {% include "includes/_auth_corner.html" %}
+                </nav>
+            </div>
+        </header>
+        <main class="genre-main">
+            <h1>Delete Genre</h1>
+            <p>Delete <strong>{% firstof genre.name genre.slug genre.id %}</strong>?</p>
+            <form method="post" action="">
+                {% csrf_token %}
+                <p><button type="submit">Delete</button></p>
+                <p><a href="{% url 'genre_detail_page' genre_id %}">Cancel</a></p>
+            </form>
+        </main>
+    </body>
+</html>

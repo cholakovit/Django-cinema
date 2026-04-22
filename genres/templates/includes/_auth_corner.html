@@ -1,0 +1,8 @@
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'logout' %}" class="genre-logout-form">
+  {% csrf_token %}
+  <button type="submit" class="genre-nav-btn">Log out</button>
+</form>
+{% else %}
+<a href="{% url 'login' %}">Log in</a>
+{% endif %}

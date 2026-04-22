@@ -1,0 +1,22 @@
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class GenreFields(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    slug: str | None = None
+    description: str | None = None
+    parent_id: str | None = None
+    color: str | None = None
+    icon: str | None = None
+    name: str | None = None
+
+
+class GenreCreate(GenreFields):
+    name: Annotated[str, Field(min_length=1)]
+
+
+class GenreUpdate(GenreFields):
+    name: Annotated[str | None, Field(default=None, min_length=1)]

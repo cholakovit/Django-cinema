@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Genres</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+  </head>
+  <body>
+    <header class="genre-header">
+      <div class="genre-header-inner">
+        <a class="genre-brand" href="{% url 'genre_list_page' %}">Cinema2 · Genres</a>
+        <nav class="genre-nav genre-nav-end" aria-label="Genres">
+          <a href="{% url 'genre_list_page' %}">All genres</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'genre_create_page' %}">New genre</a>
+          {% endif %}
+          {% include "includes/_auth_corner.html" %}
+        </nav>
+      </div>
+    </header>
+    <main class="genre-main">
+      <h1>Genres</h1>
+      <p class="hint">API: <code>/api/v1/genres/</code></p>
+      {% if genres %}
+      <ul>
+        {% for g in genres %}
+        <li>
+          {% if g.id %}
+          <a href="{% url 'genre_detail_page' g.id %}">{% firstof g.name g.slug g.id %}</a>
+          {% else %}
+          {% firstof g.name g.slug %}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>(no genres)</p>
+      {% endif %}
+    </main>
+  </body>
+</html>
